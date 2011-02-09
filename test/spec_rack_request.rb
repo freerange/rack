@@ -105,6 +105,19 @@ context "Rack::Request" do
     req.body.read.should.equal "foo=bar&quux=bla"
   end
 
+  specify "can parse POST data on PUT when no Content-Type given" do
+    req = Rack::Request.new \
+      Rack::MockRequest.env_for("/?foo=quux",
+        "REQUEST_METHOD" => 'PUT',
+        :input => "foo=bar&quux=bla")
+    req.content_type.should.be.nil
+    req.media_type.should.be.nil
+    req.query_string.should.equal "foo=quux"
+    req.GET.should.equal "foo" => "quux"
+    req.POST.should.equal "foo" => "bar", "quux" => "bla"
+    req.params.should.equal "foo" => "bar", "quux" => "bla"
+  end
+
   specify "can parse POST data on PUT when media type is form-data" do
     req = Rack::Request.new \
       Rack::MockRequest.env_for("/?foo=quux",
